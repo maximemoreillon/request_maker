@@ -136,6 +136,7 @@
             <tr
               v-for="(item, index) in request.body"
               v-bind:key="`body_item_${index}`">
+              <td></td>
               <td>"</td>
               <td>
                 <input
@@ -179,20 +180,38 @@
       <div class="">
         <h2>Response</h2>
 
+        <p v-if="response.loading">
+          Processing request...
+        </p>
+
         <template v-if="response.status.code">
           <h3>Status</h3>
-
-          <p class="status">
+          <p  :class="{error: response.status.code.toString().charAt(0) !== '2', success: true}">
             {{response.status.code}} {{response.status.text}}
           </p>
         </template>
 
         <template v-if="response.body">
           <h3>Body</h3>
-          <p class="body">
+
+          <p
+            class=""
+            v-if="response.headers['content-type'].includes('text/html')"
+            v-html="response.body"/>
+
+          <p v-else>
             {{response.body}}
           </p>
+
         </template>
+
+        <template v-if="response.error">
+          <h3>Error</h3>
+          <p class="error">
+            {{response.error}}
+          </p>
+        </template>
+
       </div>
     </div>
 
@@ -233,6 +252,12 @@ export default {
       // Response
       response: {
 
+        error: null,
+
+        loading: false,
+
+        headers: null,
+
         status: {
           code: null,
           text: null,
@@ -248,6 +273,14 @@ export default {
   },
   methods: {
     send_request(){
+
+      this.response.loading = true
+
+      this.response.error = null,
+      this.response.status.code = null
+      this.response.status.text = null
+      this.response.body = null
+      this.response.headers = null
 
       const url = `${this.request.protocol}://${this.request.hostname}:${this.request.port}${this.request.route}`
 
@@ -265,22 +298,28 @@ export default {
         headers: headers,
       })
       .then(response => {
+
         this.response.status.code = response.status
         this.response.status.text = response.statusText
         this.response.body = response.data
+        this.$set(this.response, 'headers', response.headers)
       })
       .catch(error => {
 
         if(error.response) {
+          this.$set(this.response, 'headers', error.response.headers)
           this.response.status.code = error.response.status
           this.response.status.text = error.response.statusText
           this.response.body = error.response.data
         }
         else {
           console.log(error)
-          this.response.body = `Network error`
+          this.response.error = `Network error`
         }
 
+      })
+      .finally( () => {
+        this.response.loading = false
       })
     },
     add_body_item(){
@@ -346,6 +385,13 @@ header {
 
 .port {
   width: 10%;
+}
+
+.success {
+  color: #00c000;
+}
+.error {
+  color: #c00000;
 }
 
 table {
