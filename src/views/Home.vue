@@ -1,176 +1,200 @@
 <template>
   <div class="home">
-    <h1>Request maker</h1>
-    <p>A homemade (and very rudimentary) version of Postman, developped by Maxime MOREILLON</p>
 
-    <h2>Request</h2>
-
-
-    <form class="request_form" @submit.prevent="send_request()">
-
-      <h3>Method</h3>
-      <select class="method_select" v-model="request.method">
-        <option
-          v-for="(method, index) in methods"
-          v-bind:key="`method_${index}`"
-          :value="method">
-          {{method}}
-        </option>
-      </select>
-
-      <h3>URL</h3>
-      <table>
-        <tr>
-          <th>Protocol</th>
-          <th></th>
-          <th>Hotname / IP</th>
-          <th></th>
-          <th>Port</th>
-          <th>Route</th>
-          <th>Send</th>
-        </tr>
-
-        <tr>
-
-          <td>
-            <select class="" v-model="request.protocol">
-              <option
-                v-for="(protocol, index) in protocols"
-                v-bind:key="`protocol_${index}`"
-                :value="protocol">
-                {{protocol}}
-              </option>
-            </select>
-          </td>
-
-          <td>://</td>
-
-          <td>
-            <input type="text" v-model="request.hostname">
-          </td>
-
-          <td>:</td>
-
-          <td>
-            <input type="text" v-model="request.port">
-          </td>
-
-          <td>
-            <input type="text" v-model="request.route">
-          </td>
-
-          <td>
-            <input type="submit">
-          </td>
-
-        </tr>
-
-      </table>
+    <header>
+      <h1>Request maker</h1>
+      <p>A homemade (and very rudimentary) version of Postman, developped by Maxime MOREILLON</p>
+    </header>
 
 
+    <div class="columns">
+      <form class="request_form" @submit.prevent="send_request()">
+        <h2>Request</h2>
+        <h3>Method</h3>
+        <select class="method_select" v-model="request.method">
+          <option
+            v-for="(method, index) in methods"
+            v-bind:key="`method_${index}`"
+            :value="method">
+            {{method}}
+          </option>
+        </select>
+
+        <h3>URL</h3>
+
+        <table class="url">
+          <tr>
+            <th class="protocol">Protocol</th>
+            <th class="separator"></th>
+            <th class="hostname">Hotname / IP</th>
+            <th class="separator"></th>
+            <th class="port">Port</th>
+            <th class="route">Route</th>
+          </tr>
+
+          <tr>
+
+            <td>
+              <select class="" v-model="request.protocol">
+                <option
+                  v-for="(protocol, index) in protocols"
+                  v-bind:key="`protocol_${index}`"
+                  :value="protocol">
+                  {{protocol}}
+                </option>
+              </select>
+            </td>
+
+            <td>://</td>
+
+            <td>
+              <input type="text" v-model="request.hostname" placeholder="192.168.1.2">
+            </td>
+
+            <td>:</td>
+
+            <td>
+              <input type="text" v-model="request.port" placeholder="8080">
+            </td>
+
+            <td>
+              <input type="text" v-model="request.route" placeholder="/users">
+            </td>
 
 
+          </tr>
 
+        </table>
 
+        <h3>Headers</h3>
 
-
-
-
-    </form>
-
-    <h3>Body (JSON)</h3>
-
-    <p>
-      <button
-        type="button"
-        @click="add_body_item()">
-        Add item
-      </button>
-    </p>
-
-    <table>
-      <tr>
-        <th>Key</th>
-        <th>Value</th>
-        <th>Delete</th>
-      </tr>
-      <tr
-        v-for="(item, index) in request.body"
-        v-bind:key="`body_item_${index}`">
-        <td>
-          <input
-            type="text"
-             v-model="request.body[index].key">
-        </td>
-        <td>
-          <input
-            type="text"
-            v-model="request.body[index].value">
-        </td>
-        <td>
+        <p>
           <button
             type="button"
-            @click="delete_body_item(index)">
-            Delete
+            @click="add_header()">
+            Add header
           </button>
-        </td>
+        </p>
 
-      </tr>
-    </table>
+        <table v-if="request.headers.length > 0">
+          <tr>
+            <th>Key</th>
+            <th></th>
+            <th>Value</th>
+            <th>Delete</th>
+          </tr>
+          <tr
+            v-for="(item, index) in request.headers"
+            v-bind:key="`header_item_${index}`">
+            <td>
+              <input
+                type="text"
+                 v-model="request.headers[index].key">
+            </td>
+            <td>:</td>
+            <td>
+              <input
+                type="text"
+                v-model="request.headers[index].value">
+            </td>
+            <td>
+              <button
+                type="button"
+                @click="delete_header(index)">
+                Delete
+              </button>
+            </td>
+          </tr>
+        </table>
 
+        <div class="" v-else>
+          No headers
+        </div>
 
+        <h3>Body (JSON)</h3>
 
-    <h3>Headers</h3>
-
-    <p>
-      <button
-        type="button"
-        @click="add_header()">
-        Add header
-      </button>
-    </p>
-
-    <table>
-      <tr>
-        <th>Key</th>
-        <th>Value</th>
-        <th>Delete</th>
-      </tr>
-      <tr
-        v-for="(item, index) in request.headers"
-        v-bind:key="`header_item_${index}`">
-        <td>
-          <input
-            type="text"
-             v-model="request.headers[index].key">
-        </td>
-        <td>
-          <input
-            type="text"
-            v-model="request.headers[index].value">
-        </td>
-        <td>
+        <p>
           <button
             type="button"
-            @click="delete_header(index)">
-            Delete
+            @click="add_body_item()">
+            Add item
           </button>
-        </td>
+        </p>
 
-      </tr>
-    </table>
+        <template v-if="request.body.length > 0">
+          <div class=""> { </div>
+          <table >
+            <!--
+            <tr>
+              <th></th>
+              <th>Key</th>
+              <th></th>
+              <th>Value</th>
+              <th>Delete</th>
+            </tr>
+            -->
+            <tr
+              v-for="(item, index) in request.body"
+              v-bind:key="`body_item_${index}`">
+              <td>"</td>
+              <td>
+                <input
+                  type="text"
+                  placeholder="Key"
+                  v-model="request.body[index].key">
+              </td>
+              <td>" : "</td>
+              <td>
+                <input
+                  type="text"
+                  placeholder="Value"
+                  v-model="request.body[index].value">
+              </td>
+              <td>
+                <span>"</span>
+                <span v-if="index < request.body.length -1">,</span>
+              </td>
+              <td>
+                <button
+                  type="button"
+                  @click="delete_body_item(index)">
+                  Delete
+                </button>
+              </td>
 
-    <h2>Response</h2>
+            </tr>
+          </table>
+          <div class=""> } </div>
+        </template>
 
-    <p class="status">
-      Status: {{response.status.code}} {{response.status.text}}
-    </p>
+        <div class="" v-else>
+          Empty body
+        </div>
 
-    <p class="body">
-      {{response.body}}
-    </p>
+        <h3>Send</h3>
+        <input type="submit">
 
+      </form>
 
+      <div class="">
+        <h2>Response</h2>
+
+        <template v-if="response.status.code">
+          <h3>Status</h3>
+
+          <p class="status">
+            {{response.status.code}} {{response.status.text}}
+          </p>
+        </template>
+
+        <template v-if="response.body">
+          <h3>Body</h3>
+          <p class="body">
+            {{response.body}}
+          </p>
+        </template>
+      </div>
+    </div>
 
 
   </div>
@@ -200,9 +224,9 @@ export default {
         protocol: 'http',
         hostname: '192.168.1.2',
         port: 8576,
-        route: '/users',
-        body: [{key: 'username', value: 'john'}],
-        headers: [{key: 'authorization', value: 'bearer 123'}],
+        route: '',
+        body: [],
+        headers: [],
       },
 
 
@@ -252,6 +276,10 @@ export default {
           this.response.status.text = error.response.statusText
           this.response.body = error.response.data
         }
+        else {
+          console.log(error)
+          this.response.body = `Network error`
+        }
 
       })
     },
@@ -273,14 +301,55 @@ export default {
 </script>
 
 <style scoped>
+header {
+  text-align: center;
+}
+.columns {
+  display: flex;
+}
 
+.columns > *:not(:last-child) {
+  margin-right: 1em;
+}
+
+.columns > * {
+  border: 1px solid #dddddd;
+  border-radius: 0.5em;
+  padding: 1em;
+  flex-grow: 1;
+  flex-basis: 0;
+  flex-shrink: 1;
+}
+
+.columns {
+
+}
 .method_select, .method_select option {
   text-transform: uppercase;
 }
 
+.url {
+  //table-layout: fixed;
+}
+
+.protocol {
+  width: 10%;
+}
+
+.separator {
+  width: 4%;
+}
+
+.hostname {
+  width: 20%;
+}
+
+.port {
+  width: 10%;
+}
+
 table {
   width: 100%;
-  text-align: left;
   border-collapse: collapse;
 }
 
@@ -291,9 +360,7 @@ input, select, button {
 td, th {
   padding: 0.25em;
 }
-tr:not(:last-child) {
-  border-bottom: 1px solid #dddddd;
-}
+
 
 table input,
 table select,
