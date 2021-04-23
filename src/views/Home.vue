@@ -111,66 +111,61 @@
           No headers
         </div>
 
-        <h3>Body (JSON)</h3>
+        <template v-if="['post', 'put', 'patch'].includes(request.method)">
+          <h3>Body (JSON)</h3>
 
-        <p>
-          <button
-            type="button"
-            @click="add_body_item()">
-            Add item
-          </button>
-        </p>
+          <p>
+            <button
+              type="button"
+              @click="add_body_item()">
+              Add item
+            </button>
+          </p>
 
-        <template v-if="request.body.length > 0">
-          <div class=""> { </div>
-          <table >
-            <!--
-            <tr>
-              <th></th>
-              <th>Key</th>
-              <th></th>
-              <th>Value</th>
-              <th>Delete</th>
-            </tr>
-            -->
-            <tr
-              v-for="(item, index) in request.body"
-              v-bind:key="`body_item_${index}`">
-              <td></td>
-              <td>"</td>
-              <td>
-                <input
-                  type="text"
-                  placeholder="Key"
-                  v-model="request.body[index].key">
-              </td>
-              <td>" : "</td>
-              <td>
-                <input
-                  type="text"
-                  placeholder="Value"
-                  v-model="request.body[index].value">
-              </td>
-              <td>
-                <span>"</span>
-                <span v-if="index < request.body.length -1">,</span>
-              </td>
-              <td>
-                <button
-                  type="button"
-                  @click="delete_body_item(index)">
-                  Delete
-                </button>
-              </td>
+          <template v-if="request.body.length > 0">
+            <div class=""> { </div>
+            <table >
+              <tr
+                v-for="(item, index) in request.body"
+                v-bind:key="`body_item_${index}`">
+                <td></td>
+                <td>"</td>
+                <td>
+                  <input
+                    type="text"
+                    placeholder="Key"
+                    v-model="request.body[index].key">
+                </td>
+                <td>" : "</td>
+                <td>
+                  <input
+                    type="text"
+                    placeholder="Value"
+                    v-model="request.body[index].value">
+                </td>
+                <td>
+                  <span>"</span>
+                  <span v-if="index < request.body.length -1">,</span>
+                </td>
+                <td>
+                  <button
+                    type="button"
+                    @click="delete_body_item(index)">
+                    Delete
+                  </button>
+                </td>
 
-            </tr>
-          </table>
-          <div class=""> } </div>
+              </tr>
+            </table>
+            <div class=""> } </div>
+          </template>
+
+          <div class="" v-else>
+            Empty body
+          </div>
         </template>
 
-        <div class="" v-else>
-          Empty body
-        </div>
+
 
         <h3>Send</h3>
         <input type="submit">
@@ -284,6 +279,7 @@ export default {
 
       const url = `${this.request.protocol}://${this.request.hostname}:${this.request.port}${this.request.route}`
 
+      // Could be done using reduce
       let body = {}
       this.request.body.forEach((item) => { body[item.key] = item.value })
 
