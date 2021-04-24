@@ -1,5 +1,29 @@
 <template>
   <div class="about">
-    <h1>This is an about page</h1>
+    <p>Author: Maxime MOREILLON</p>
+    <p>Version: {{version}}</p>
+
   </div>
 </template>
+
+<script>
+
+import pjson from '@/../package.json'
+
+export default {
+  name: 'About',
+  data(){
+    return {
+      version: pjson.version
+    }
+  },
+
+
+}
+</script>
+
+<style scoped>
+.about {
+  text-align: center;
+}
+</style>

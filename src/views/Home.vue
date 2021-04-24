@@ -1,217 +1,201 @@
 <template>
-  <div class="home">
 
-    <header>
-      <h1>Request maker</h1>
-      <p>A homemade (and very rudimentary) version of Postman, developped by Maxime MOREILLON</p>
-    </header>
+    <v-row
+      class="debug"
+      align-content="stretch">
+      <!-- Request column -->
+      <v-col>
+        <v-sheet
+          class="pa-5"
+          elevation="1"
+          rounded>
 
+          <h2>Request</h2>
 
-    <div class="columns">
-      <form class="request_form" @submit.prevent="send_request()">
-        <h2>Request</h2>
-        <h3>Method</h3>
-        <select class="method_select" v-model="request.method">
-          <option
-            v-for="(method, index) in methods"
-            v-bind:key="`method_${index}`"
-            :value="method">
-            {{method}}
-          </option>
-        </select>
+          <v-form
+            @submit.prevent="send_request()"
+            ref="form"
+            v-model="valid"
+            lazy-validation>
 
-        <h3>URL</h3>
+            <v-select
+              label="Method"
+              :items="methods"
+              v-model="request.method"/>
 
-        <table class="url">
-          <tr>
-            <th class="protocol">Protocol</th>
-            <th class="separator"></th>
-            <th class="hostname">Hotname / IP</th>
-            <th class="separator"></th>
-            <th class="port">Port</th>
-            <th class="route">Route</th>
-          </tr>
-
-          <tr>
-
-            <td>
-              <select class="" v-model="request.protocol">
-                <option
-                  v-for="(protocol, index) in protocols"
-                  v-bind:key="`protocol_${index}`"
-                  :value="protocol">
-                  {{protocol}}
-                </option>
-              </select>
-            </td>
-
-            <td>://</td>
-
-            <td>
-              <input type="text" v-model="request.hostname" placeholder="192.168.1.2">
-            </td>
-
-            <td>:</td>
-
-            <td>
-              <input type="text" v-model="request.port" placeholder="8080">
-            </td>
-
-            <td>
-              <input type="text" v-model="request.route" placeholder="/users">
-            </td>
+            <v-text-field
+              label="URL"
+              v-model="request_url"
+              placeholder="http://192.169.1.2:8080/users"
+              required
+              :rules="urlRules"/>
 
 
-          </tr>
+            <v-row class="mt-2">
+              <v-col>
+                <h3>Headers</h3>
+              </v-col>
 
-        </table>
+              <v-spacer></v-spacer>
 
-        <h3>Headers</h3>
+              <v-col>
+                <v-btn
+                  small
+                  @click="add_header()">
+                  <v-icon>mdi-plus</v-icon>
+                  <span>Add header</span>
+                </v-btn>
+              </v-col>
+            </v-row>
 
-        <p>
-          <button
-            type="button"
-            @click="add_header()">
-            Add header
-          </button>
-        </p>
-
-        <table v-if="request.headers.length > 0">
-          <tr>
-            <th>Key</th>
-            <th></th>
-            <th>Value</th>
-            <th>Delete</th>
-          </tr>
-          <tr
-            v-for="(item, index) in request.headers"
-            v-bind:key="`header_item_${index}`">
-            <td>
-              <input
-                type="text"
-                 v-model="request.headers[index].key">
-            </td>
-            <td>:</td>
-            <td>
-              <input
-                type="text"
-                v-model="request.headers[index].value">
-            </td>
-            <td>
-              <button
-                type="button"
-                @click="delete_header(index)">
-                Delete
-              </button>
-            </td>
-          </tr>
-        </table>
-
-        <div class="" v-else>
-          No headers
-        </div>
-
-        <template v-if="['post', 'put', 'patch'].includes(request.method)">
-          <h3>Body (JSON)</h3>
-
-          <p>
-            <button
-              type="button"
-              @click="add_body_item()">
-              Add item
-            </button>
-          </p>
-
-          <template v-if="request.body.length > 0">
-            <div class=""> { </div>
-            <table >
+            <table v-if="request.headers.length > 0">
               <tr
-                v-for="(item, index) in request.body"
-                v-bind:key="`body_item_${index}`">
-                <td></td>
-                <td>"</td>
+                v-for="(item, index) in request.headers"
+                v-bind:key="`header_item_${index}`">
                 <td>
-                  <input
-                    type="text"
-                    placeholder="Key"
-                    v-model="request.body[index].key">
+                  <v-text-field
+                    v-model="request.headers[index].key"
+                    placeholder="Key"/>
                 </td>
-                <td>" : "</td>
+                <td>:</td>
                 <td>
-                  <input
-                    type="text"
-                    placeholder="Value"
-                    v-model="request.body[index].value">
+                  <v-text-field
+                    v-model="request.headers[index].value"
+                    placeholder="Value"/>
                 </td>
                 <td>
-                  <span>"</span>
-                  <span v-if="index < request.body.length -1">,</span>
+                  <v-btn
+                    icon
+                    @click="delete_header(index)">
+                    <v-icon>mdi-close</v-icon>
+                  </v-btn>
                 </td>
-                <td>
-                  <button
-                    type="button"
-                    @click="delete_body_item(index)">
-                    Delete
-                  </button>
-                </td>
-
               </tr>
             </table>
-            <div class=""> } </div>
+
+            <div class="" v-else>
+              No headers
+            </div>
+
+            <template v-if="['post', 'put', 'patch'].includes(request.method)">
+
+              <v-row class="mt-3">
+                <v-col>
+                  <h3>Body (JSON)</h3>
+                </v-col>
+
+                <v-spacer></v-spacer>
+
+                <v-col>
+                  <v-btn
+                    small
+                    @click="add_body_item()">
+                    <v-icon>mdi-close</v-icon>
+                    <span>Add body item</span>
+                  </v-btn>
+                </v-col>
+              </v-row>
+
+              <template v-if="request.body.length > 0">
+                <div class=""> { </div>
+                <table >
+                  <tr
+                    v-for="(item, index) in request.body"
+                    v-bind:key="`body_item_${index}`">
+                    <td></td>
+                    <td>"</td>
+                    <td>
+                      <v-text-field
+                        v-model="request.body[index].key"
+                        placeholder="Key"/>
+                    </td>
+                    <td>" : "</td>
+                    <td>
+                      <v-text-field
+                        v-model="request.body[index].value"
+                        placeholder="Value"/>
+                    </td>
+                    <td>
+                      <span>"</span>
+                      <span v-if="index < request.body.length -1">,</span>
+                    </td>
+                    <td>
+                      <v-btn
+                        icon
+                        @click="delete_body_item(index)">
+                        <v-icon>mdi-delete</v-icon>
+                      </v-btn>
+                    </td>
+
+                  </tr>
+                </table>
+                <div class=""> } </div>
+              </template>
+
+              <div class="" v-else>
+                Empty body
+              </div>
+            </template>
+
+            <v-row class="mt-6">
+              <v-col
+                class="text-center"
+                cols="12" >
+                <v-btn
+                  type="submit">
+                  <v-icon>mdi-send</v-icon>
+                  <span>Send request</span>
+                </v-btn>
+              </v-col>
+            </v-row>
+
+          </v-form>
+        </v-sheet>
+      </v-col>
+      <!-- Response column -->
+      <v-col>
+        <v-sheet
+          elevation="1"
+          rounded
+          class="pa-5">
+          <h2>Response</h2>
+
+          <p v-if="response.loading">
+            Processing request...
+          </p>
+
+          <template v-if="response.status.code">
+            <h3>Status</h3>
+            <p :class="{error_message: response.status.code.toString().charAt(0) !== '2', success_message: true}">
+              {{response.status.code}} {{response.status.text}}
+            </p>
           </template>
 
-          <div class="" v-else>
-            Empty body
-          </div>
-        </template>
+          <template v-if="response.body">
+            <h3>Body</h3>
 
+            <p
+              class=""
+              v-if="response.headers['content-type'].includes('text/html')"
+              v-html="response.body"/>
 
+            <p v-else>
+              {{response.body}}
+            </p>
 
-        <h3>Send</h3>
-        <input type="submit">
+          </template>
 
-      </form>
+          <template v-if="response.error">
+            <h3>Error</h3>
+            <p class="error_message">
+              {{response.error}}
+            </p>
+          </template>
+        </v-sheet>
+      </v-col>
 
-      <div class="">
-        <h2>Response</h2>
+    </v-row>
 
-        <p v-if="response.loading">
-          Processing request...
-        </p>
-
-        <template v-if="response.status.code">
-          <h3>Status</h3>
-          <p  :class="{error: response.status.code.toString().charAt(0) !== '2', success: true}">
-            {{response.status.code}} {{response.status.text}}
-          </p>
-        </template>
-
-        <template v-if="response.body">
-          <h3>Body</h3>
-
-          <p
-            class=""
-            v-if="response.headers['content-type'].includes('text/html')"
-            v-html="response.body"/>
-
-          <p v-else>
-            {{response.body}}
-          </p>
-
-        </template>
-
-        <template v-if="response.error">
-          <h3>Error</h3>
-          <p class="error">
-            {{response.error}}
-          </p>
-        </template>
-
-      </div>
-    </div>
-
-
-  </div>
 </template>
 
 <script>
@@ -219,6 +203,19 @@ export default {
   name: 'Home',
   data(){
     return {
+
+      valid: false,
+
+      urlRules: [
+        v => !!v || 'URL is required',
+        v => {
+          try {
+            new URL(v)
+            return true
+          } catch { return 'URL is invalid' }
+
+        },
+      ],
 
       methods: [
         'get',
@@ -229,18 +226,19 @@ export default {
       ],
 
       protocols: [
-        'http',
-        'https'
+        'http:',
+        'https:'
       ],
 
       request: {
-        method: 'get',
-        protocol: 'http',
+        method: 'post',
+        protocol: 'http:',
         hostname: '192.168.1.2',
         port: 8576,
-        route: '',
+        route: '/users',
         body: [],
         headers: [],
+        url: 'http://192.168.1.2:8080/users',
       },
 
 
@@ -277,21 +275,25 @@ export default {
       this.response.body = null
       this.response.headers = null
 
-      const url = `${this.request.protocol}://${this.request.hostname}:${this.request.port}${this.request.route}`
+      const url = `${this.request.protocol}//${this.request.hostname}:${this.request.port}${this.request.route}`
 
-      // Could be done using reduce
-      let body = {}
-      this.request.body.forEach((item) => { body[item.key] = item.value })
 
-      let headers = {}
-      this.request.headers.forEach((item) => { headers[item.key] = item.value })
+      const body = this.request.body.reduce( (acc, item) => {
+         acc[item.key] = item.value
+         return acc
+      }, {})
+
+      const headers = this.request.headers.reduce( (acc, header) => {
+         acc[header.key] = header.value
+         return acc
+      }, {})
 
 
       this.axios({
         method: this.request.method,
-        url: url,
+        url,
         data: body,
-        headers: headers,
+        headers,
       })
       .then(response => {
 
@@ -330,63 +332,53 @@ export default {
     delete_header(index){
       this.request.headers.splice(index, 1)
     },
+  },
+  computed: {
+    request_url: {
+
+      get () {
+        return this.request.url
+      },
+      set (url_string) {
+
+        let url
+
+        try {url = new URL(url_string)}
+        catch {return}
+
+        const {
+          hostname,
+          port,
+          protocol,
+          pathname,
+          search,
+        } = url
+
+
+
+        this.request = {
+          ...this.request,
+          hostname,
+          port,
+          protocol,
+          route: pathname,
+          search,
+        }
+
+      }
+    }
   }
 
 }
 </script>
 
 <style scoped>
-header {
-  text-align: center;
+.debug {
 }
-.columns {
-  display: flex;
-}
-
-.columns > *:not(:last-child) {
-  margin-right: 1em;
-}
-
-.columns > * {
-  border: 1px solid #dddddd;
-  border-radius: 0.5em;
-  padding: 1em;
-  flex-grow: 1;
-  flex-basis: 0;
-  flex-shrink: 1;
-}
-
-.columns {
-
-}
-.method_select, .method_select option {
-  text-transform: uppercase;
-}
-
-.url {
-  //table-layout: fixed;
-}
-
-.protocol {
-  width: 10%;
-}
-
-.separator {
-  width: 4%;
-}
-
-.hostname {
-  width: 20%;
-}
-
-.port {
-  width: 10%;
-}
-
-.success {
+.success_message {
   color: #00c000;
 }
-.error {
+.error_message {
   color: #c00000;
 }
 
@@ -401,14 +393,13 @@ input, select, button {
 
 td, th {
   padding: 0.25em;
+  white-space: nowrap;
 }
-
 
 table input,
 table select,
 table button {
   width: 100%;
-
 }
 
 </style>
