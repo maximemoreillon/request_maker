@@ -23,7 +23,7 @@
         <v-col
           class="text-center"
           cols="12" >
-          <span> API tester -</span>
+          <span> API tester v{{version}}-</span>
            Maxime Moreillon - {{new Date().getFullYear()}}
         </v-col>
       </v-row>
@@ -34,12 +34,12 @@
 </template>
 
 <script>
-
+import psjon from '@/../package.json'
 export default {
   name: 'App',
 
   data: () => ({
-    //
+    version: psjon.version,
   }),
 };
 </script>

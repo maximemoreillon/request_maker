@@ -1,10 +1,12 @@
 <template>
 
+  <v-container
+    fluid>
+
     <v-row
-      class="debug"
-      align-content="stretch">
+      align="stretch">
       <!-- Request column -->
-      <v-col>
+      <v-col cols="6">
         <v-sheet
           class="pa-5"
           elevation="1"
@@ -19,19 +21,22 @@
             lazy-validation>
 
             <v-select
+              class="mt-5"
               label="Method"
               :items="methods"
+              item-text="text"
+              item-value="value"
               v-model="request.method"/>
 
             <v-text-field
               label="URL"
-              v-model="request_url"
+              v-model="request.url"
               placeholder="http://192.169.1.2:8080/users"
               required
               :rules="urlRules"/>
 
 
-            <v-row class="mt-2">
+            <v-row class="mt-5">
               <v-col>
                 <h3>Headers</h3>
               </v-col>
@@ -79,7 +84,7 @@
 
             <template v-if="['post', 'put', 'patch'].includes(request.method)">
 
-              <v-row class="mt-3">
+              <v-row class="mt-5">
                 <v-col>
                   <h3>Body (JSON)</h3>
                 </v-col>
@@ -90,7 +95,7 @@
                   <v-btn
                     small
                     @click="add_body_item()">
-                    <v-icon>mdi-close</v-icon>
+                    <v-icon>mdi-plus</v-icon>
                     <span>Add body item</span>
                   </v-btn>
                 </v-col>
@@ -137,11 +142,13 @@
               </div>
             </template>
 
-            <v-row class="mt-6">
+            <v-row class="mt-8">
               <v-col
                 class="text-center"
                 cols="12" >
                 <v-btn
+                  :loading="processing"
+                  :disable="processing"
                   type="submit">
                   <v-icon>mdi-send</v-icon>
                   <span>Send request</span>
@@ -153,16 +160,26 @@
         </v-sheet>
       </v-col>
       <!-- Response column -->
-      <v-col>
+      <v-col cols="6">
         <v-sheet
           elevation="1"
           rounded
-          class="pa-5">
+          class="pa-5"
+          height="100%">
+
           <h2>Response</h2>
 
-          <p v-if="response.loading">
-            Processing request...
-          </p>
+          <div
+            class="mt-5"
+            v-if="!processing && !response.status.code">
+            No response yet
+          </div>
+
+
+          <v-progress-linear
+            class="mt-5"
+            v-if="processing"
+            indeterminate />
 
           <template v-if="response.status.code">
             <h3>Status</h3>
@@ -174,12 +191,15 @@
           <template v-if="response.body">
             <h3>Body</h3>
 
+
             <p
-              class=""
+              class="response_body"
               v-if="response.headers['content-type'].includes('text/html')"
               v-html="response.body"/>
 
-            <p v-else>
+            <p
+              class="response_body"
+              v-else>
               {{response.body}}
             </p>
 
@@ -196,6 +216,10 @@
 
     </v-row>
 
+  </v-container>
+
+
+
 </template>
 
 <script>
@@ -203,6 +227,8 @@ export default {
   name: 'Home',
   data(){
     return {
+
+      processing: false,
 
       valid: false,
 
@@ -218,27 +244,20 @@ export default {
       ],
 
       methods: [
-        'get',
-        'post',
-        'delete',
-        'put',
-        'patch',
-      ],
-
-      protocols: [
-        'http:',
-        'https:'
+        {text: 'GET', value: 'get'},
+        {text: 'POST', value: 'post'},
+        {text: 'DELETE', value: 'delete'},
+        {text: 'PUT', value: 'put'},
+        {text: 'PATCH', value: 'patch'},
       ],
 
       request: {
-        method: 'post',
-        protocol: 'http:',
-        hostname: '192.168.1.2',
-        port: 8576,
-        route: '/users',
+        url: 'http://192.168.1.2:8080/items',
+        method: 'get',
         body: [],
-        headers: [],
-        url: 'http://192.168.1.2:8080/users',
+        headers: [
+
+        ],
       },
 
 
@@ -267,7 +286,7 @@ export default {
   methods: {
     send_request(){
 
-      this.response.loading = true
+      this.processing = true
 
       this.response.error = null,
       this.response.status.code = null
@@ -275,8 +294,21 @@ export default {
       this.response.body = null
       this.response.headers = null
 
-      const url = `${this.request.protocol}//${this.request.hostname}:${this.request.port}${this.request.route}`
+      let parsed_url
+      try { parsed_url = new URL(this.request.url) }
+      catch {
+        console.error('Invalid URL')
+        return
+       }
 
+      const {
+        hostname,
+        port,
+        protocol,
+        pathname,
+      } = parsed_url
+
+      const url = `${protocol}//${hostname}:${port}${pathname}`
 
       const body = this.request.body.reduce( (acc, item) => {
          acc[item.key] = item.value
@@ -316,9 +348,7 @@ export default {
         }
 
       })
-      .finally( () => {
-        this.response.loading = false
-      })
+      .finally( () => { this.processing = false })
     },
     add_body_item(){
       this.request.body.push({key: '', value: ''})
@@ -334,46 +364,15 @@ export default {
     },
   },
   computed: {
-    request_url: {
 
-      get () {
-        return this.request.url
-      },
-      set (url_string) {
-
-        let url
-
-        try {url = new URL(url_string)}
-        catch {return}
-
-        const {
-          hostname,
-          port,
-          protocol,
-          pathname,
-          search,
-        } = url
-
-
-
-        this.request = {
-          ...this.request,
-          hostname,
-          port,
-          protocol,
-          route: pathname,
-          search,
-        }
-
-      }
-    }
   }
 
 }
 </script>
 
 <style scoped>
-.debug {
+.response_body {
+  overflow-x: auto;
 }
 .success_message {
   color: #00c000;
