@@ -148,7 +148,7 @@
                 cols="12" >
                 <v-btn
                   :loading="processing"
-                  :disable="processing"
+                  :disabled="processing || !url_valid"
                   type="submit">
                   <v-icon>mdi-send</v-icon>
                   <span>Send request</span>
@@ -186,6 +186,10 @@
             <p :class="{error_message: response.status.code.toString().charAt(0) !== '2', success_message: true}">
               {{response.status.code}} {{response.status.text}}
             </p>
+            <h3>Content-type</h3>
+            <p>
+              {{response.headers['content-type']}}
+            </p>
           </template>
 
           <template v-if="response.body">
@@ -196,6 +200,12 @@
               class="response_body"
               v-if="response.headers['content-type'].includes('text/html')"
               v-html="response.body"/>
+
+            <p
+              class="response_body"
+              v-else-if="response.headers['content-type'].includes('application/json')">
+              <pre>{{response_pretty}}</pre>
+            </p>
 
             <p
               class="response_body"
@@ -277,9 +287,6 @@ export default {
 
         body: null,
       },
-
-
-
 
     }
   },
@@ -364,7 +371,28 @@ export default {
     },
   },
   computed: {
+    response_pretty() {
+      let output
+      try {
+        console.log(this.response.body)
+        output = JSON.stringify(JSON.parse(this.response.body), null, 2)
+      }
+      catch (error) {
+        console.log(error)
+        output = this.response.body
+      }
+      return output
+    },
+    url_valid(){
+      try {
+        new URL(this.request.url)
+        return true
+      }
+      catch {
+        return false
+       }
 
+    }
   }
 
 }
@@ -372,6 +400,7 @@ export default {
 
 <style scoped>
 .response_body {
+  width: 100%;
   overflow-x: auto;
 }
 .success_message {
