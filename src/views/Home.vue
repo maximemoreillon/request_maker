@@ -374,11 +374,9 @@ export default {
     response_pretty() {
       let output
       try {
-        console.log(this.response.body)
         output = JSON.stringify(JSON.parse(this.response.body), null, 2)
       }
       catch (error) {
-        console.log(error)
         output = this.response.body
       }
       return output
@@ -391,7 +389,6 @@ export default {
       catch {
         return false
        }
-
     }
   }
 
