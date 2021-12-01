@@ -5,6 +5,17 @@
       color="#444"
       dark >
 
+      <v-img
+        alt="Logo"
+        class="shrink mr-2"
+        contain
+        src="@/assets/logo.png"
+        transition="scale-transition"
+        width="40" />
+
+
+
+
       <v-toolbar-title>API tester</v-toolbar-title>
 
 
