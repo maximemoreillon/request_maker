@@ -13,9 +13,6 @@
         transition="scale-transition"
         width="40" />
 
-
-
-
       <v-toolbar-title>API tester</v-toolbar-title>
 
 

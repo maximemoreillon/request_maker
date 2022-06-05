@@ -1,39 +1,21 @@
 <template>
 
-  <v-container
-    fluid>
+  <v-container fluid>
 
-    <v-row
-      align="stretch">
+    <v-row align="stretch">
       <!-- Request column -->
       <v-col cols="6">
-        <v-sheet
-          class="pa-5"
-          elevation="1"
-          rounded>
+        <v-sheet class="pa-5" elevation="1" rounded>
 
           <h2>Request</h2>
 
-          <v-form
-            @submit.prevent="send_request()"
-            ref="form"
-            v-model="valid"
-            lazy-validation>
+          <v-form @submit.prevent="send_request()" ref="form" v-model="valid" lazy-validation>
 
-            <v-select
-              class="mt-5"
-              label="Method"
-              :items="methods"
-              item-text="text"
-              item-value="value"
-              v-model="request.method"/>
+            <v-select class="mt-5" label="Method" :items="methods" item-text="text" item-value="value"
+              v-model="request.method" />
 
-            <v-text-field
-              label="URL"
-              v-model="request.url"
-              placeholder="http://192.169.1.2:8080/users"
-              required
-              :rules="urlRules"/>
+            <v-text-field label="URL" v-model="request.url" placeholder="http://192.169.1.2:8080/users" required
+              :rules="urlRules" />
 
 
             <v-row class="mt-5">
@@ -44,9 +26,7 @@
               <v-spacer></v-spacer>
 
               <v-col>
-                <v-btn
-                  small
-                  @click="add_header()">
+                <v-btn small @click="add_header()">
                   <v-icon>mdi-plus</v-icon>
                   <span>Add header</span>
                 </v-btn>
@@ -54,24 +34,16 @@
             </v-row>
 
             <table v-if="request.headers.length > 0">
-              <tr
-                v-for="(item, index) in request.headers"
-                v-bind:key="`header_item_${index}`">
+              <tr v-for="(item, index) in request.headers" v-bind:key="`header_item_${index}`">
                 <td>
-                  <v-text-field
-                    v-model="request.headers[index].key"
-                    placeholder="Key"/>
+                  <v-text-field v-model="request.headers[index].key" placeholder="Key" />
                 </td>
                 <td>:</td>
                 <td>
-                  <v-text-field
-                    v-model="request.headers[index].value"
-                    placeholder="Value"/>
+                  <v-text-field v-model="request.headers[index].value" placeholder="Value" />
                 </td>
                 <td>
-                  <v-btn
-                    icon
-                    @click="delete_header(index)">
+                  <v-btn icon @click="delete_header(index)">
                     <v-icon>mdi-close</v-icon>
                   </v-btn>
                 </td>
@@ -92,9 +64,7 @@
                 <v-spacer></v-spacer>
 
                 <v-col>
-                  <v-btn
-                    small
-                    @click="add_body_item()">
+                  <v-btn small @click="add_body_item()">
                     <v-icon>mdi-plus</v-icon>
                     <span>Add body item</span>
                   </v-btn>
@@ -103,31 +73,23 @@
 
               <template v-if="request.body.length > 0">
                 <div class=""> { </div>
-                <table >
-                  <tr
-                    v-for="(item, index) in request.body"
-                    v-bind:key="`body_item_${index}`">
+                <table>
+                  <tr v-for="(item, index) in request.body" v-bind:key="`body_item_${index}`">
                     <td></td>
                     <td>"</td>
                     <td>
-                      <v-text-field
-                        v-model="request.body[index].key"
-                        placeholder="Key"/>
+                      <v-text-field v-model="request.body[index].key" placeholder="Key" />
                     </td>
                     <td>" : "</td>
                     <td>
-                      <v-text-field
-                        v-model="request.body[index].value"
-                        placeholder="Value"/>
+                      <v-text-field v-model="request.body[index].value" placeholder="Value" />
                     </td>
                     <td>
                       <span>"</span>
                       <span v-if="index < request.body.length -1">,</span>
                     </td>
                     <td>
-                      <v-btn
-                        icon
-                        @click="delete_body_item(index)">
+                      <v-btn icon @click="delete_body_item(index)">
                         <v-icon>mdi-delete</v-icon>
                       </v-btn>
                     </td>
@@ -143,17 +105,20 @@
             </template>
 
             <v-row class="mt-8">
-              <v-col
-                class="text-center"
-                cols="12" >
-                <v-btn
-                  :loading="processing"
-                  :disabled="processing || !url_valid"
-                  type="submit">
+              <v-spacer />
+              <v-col cols="auto">
+                <v-btn :loading="processing" :disabled="processing || !url_valid" type="submit">
                   <v-icon>mdi-send</v-icon>
-                  <span>Send request</span>
+                  <span>Send</span>
                 </v-btn>
               </v-col>
+              <v-col cols="auto">
+                <v-btn @click="cancel_request()" :disabled="!processing">
+                  <v-icon>mdi-close</v-icon>
+                  <span>Cancel</span>
+                </v-btn>
+              </v-col>
+              <v-spacer />
             </v-row>
 
           </v-form>
@@ -161,30 +126,21 @@
       </v-col>
       <!-- Response column -->
       <v-col cols="6">
-        <v-sheet
-          elevation="1"
-          rounded
-          class="pa-5"
-          height="100%">
+        <v-sheet elevation="1" rounded class="pa-5" height="100%">
 
           <h2>Response</h2>
 
-          <div
-            class="mt-5"
-            v-if="!processing && !response.status.code">
+          <div class="mt-5" v-if="!processing && !response">
             No response yet
           </div>
 
 
-          <v-progress-linear
-            class="mt-5"
-            v-if="processing"
-            indeterminate />
+          <v-progress-linear class="mt-5" v-if="processing" indeterminate />
 
-          <template v-if="response.status.code">
+          <template v-if="response">
             <h3>Status</h3>
-            <p :class="{error_message: response.status.code.toString().charAt(0) !== '2', success_message: true}">
-              {{response.status.code}} {{response.status.text}}
+            <p :class="{error_message: response.status.toString().charAt(0) !== '2', success_message: true}">
+              {{response.status}} {{response.statusText}}
             </p>
             <h3>Content-type</h3>
             <p>
@@ -192,35 +148,25 @@
             </p>
           </template>
 
-          <template v-if="response.body">
+
+          <template v-if="response">
             <h3>Body</h3>
 
+            <p class="response_body" v-if="response.headers['content-type'].includes('text/html')"
+              v-html="response.data" />
 
-            <p
-              class="response_body"
-              v-if="response.headers['content-type'].includes('text/html')"
-              v-html="response.body"/>
-
-            <p
-              class="response_body"
-              v-else-if="response.headers['content-type'].includes('application/json')">
-              <pre>{{response_pretty}}</pre>
+            <p class="response_body" v-else-if="response.headers['content-type'].includes('application/json')">
+            <pre>{{response_pretty}}</pre>
             </p>
 
-            <p
-              class="response_body"
-              v-else>
+            <p class="response_body" v-else>
               {{response.body}}
             </p>
 
+
           </template>
 
-          <template v-if="response.error">
-            <h3>Error</h3>
-            <p class="error_message">
-              {{response.error}}
-            </p>
-          </template>
+
         </v-sheet>
       </v-col>
 
@@ -239,6 +185,7 @@ export default {
     return {
 
       processing: false,
+      abortController: null,
 
       valid: false,
 
@@ -265,28 +212,11 @@ export default {
         url: 'http://192.168.1.2:8080/items',
         method: 'get',
         body: [],
-        headers: [
-
-        ],
+        headers: [],
       },
 
 
-      // Response
-      response: {
-
-        error: null,
-
-        loading: false,
-
-        headers: null,
-
-        status: {
-          code: null,
-          text: null,
-        },
-
-        body: null,
-      },
+      response: null,
 
     }
   },
@@ -294,19 +224,12 @@ export default {
     send_request(){
 
       this.processing = true
-
-      this.response.error = null,
-      this.response.status.code = null
-      this.response.status.text = null
-      this.response.body = null
-      this.response.headers = null
+      this.response = null
+      this.abortController = new AbortController()
 
       let parsed_url
       try { parsed_url = new URL(this.request.url) }
-      catch {
-        console.error('Invalid URL')
-        return
-       }
+      catch { return console.error('Invalid URL') }
 
       const {
         hostname,
@@ -327,35 +250,34 @@ export default {
          return acc
       }, {})
 
-
-      this.axios({
+      const axios_options = {
         method: this.request.method,
         url,
         data: body,
         headers,
-      })
-      .then(response => {
+        signal: this.abortController.signal,
+      }
 
-        this.response.status.code = response.status
-        this.response.status.text = response.statusText
-        this.response.body = response.data
-        this.$set(this.response, 'headers', response.headers)
+
+      this.axios(axios_options)
+      .then(response => {
+        this.response = response
       })
       .catch(error => {
 
         if(error.response) {
-          this.$set(this.response, 'headers', error.response.headers)
-          this.response.status.code = error.response.status
-          this.response.status.text = error.response.statusText
-          this.response.body = error.response.data
+          this.response = error.response
         }
         else {
-          console.log(error)
-          this.response.error = `Network error`
+          console.error(error)
+          alert('Request failed, see console for details')
         }
 
       })
       .finally( () => { this.processing = false })
+    },
+    cancel_request(){
+      this.abortController.abort()
     },
     add_body_item(){
       this.request.body.push({key: '', value: ''})
