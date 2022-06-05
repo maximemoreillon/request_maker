@@ -1,15 +1,19 @@
 stages:
-  - containerization
+  - build
 
 variables:
   APPLICATION_NAME: request-maker
   DOCKER_IMAGE: ${DOCKER_HUB_USERNAME}/${APPLICATION_NAME}
+  
+image: moreillon/ci-dind
+services:
+  - name: docker:19.03.12-dind
 
 
-containerization:
-  stage: containerization
+build:
+  stage: build
   tags:
-    - moreillon
+    - dind
   script:
     - echo "${DOCKER_HUB_PASSWORD}" | docker login --username ${DOCKER_HUB_USERNAME} --password-stdin;
     - docker build -t ${DOCKER_IMAGE} .
