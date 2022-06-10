@@ -160,7 +160,7 @@
             </p>
 
             <p class="response_body" v-else>
-              {{response.body}}
+              {{ response.data }}
             </p>
 
 
@@ -220,8 +220,26 @@ export default {
 
     }
   },
+  mounted(){
+    this.load_request()
+  },
   methods: {
+    save_request(){
+      const request_stringified = JSON.stringify(this.request)
+      localStorage.request = request_stringified
+    },
+    load_request(){
+      const request_stringified = localStorage.request
+      if (!request_stringified) return
+      try {
+        this.request = JSON.parse(request_stringified)
+      } catch (error) {
+        console.warn(error)
+      }
+    },
     send_request(){
+
+      this.save_request()
 
       this.processing = true
       this.response = null
@@ -294,14 +312,12 @@ export default {
   },
   computed: {
     response_pretty() {
-      let output
       try {
-        output = JSON.stringify(JSON.parse(this.response.body), null, 2)
+        return JSON.stringify(JSON.parse(this.response.data), null, 2)
       }
       catch (error) {
-        output = this.response.body
+        return this.response.data
       }
-      return output
     },
     url_valid(){
       try {
