@@ -130,41 +130,45 @@
 
           <h2>Response</h2>
 
-          <div class="mt-5" v-if="!processing && !response">
+          <p v-if="!processing && !response">
             No response yet
-          </div>
+          </p>
 
 
           <v-progress-linear class="mt-5" v-if="processing" indeterminate />
 
-          <template v-if="response">
-            <h3>Status</h3>
-            <p :class="{error_message: response.status.toString().charAt(0) !== '2', success_message: true}">
-              {{response.status}} {{response.statusText}}
-            </p>
-            <h3>Content-type</h3>
-            <p>
-              {{response.headers['content-type']}}
-            </p>
-          </template>
-
 
           <template v-if="response">
-            <h3>Body</h3>
+            <template v-if="response.headers">
+              <h3>Status</h3>
+              <p :class="{error_message: response.status.toString().charAt(0) !== '2', success_message: true}">
+                {{response.status}} {{response.statusText}}
+              </p>
+              <h3>Content-type</h3>
+              <p>
+                {{response.headers['content-type']}}
+              </p>
 
-            <p class="response_body" v-if="response.headers['content-type'].includes('text/html')"
-              v-html="response.data" />
+              <h3>Body</h3>
 
-            <p class="response_body" v-else-if="response.headers['content-type'].includes('application/json')">
-            <pre>{{response_pretty}}</pre>
-            </p>
+              <p class="response_body" v-if="response.headers['content-type'].includes('text/html')"
+                v-html="response.data" />
 
-            <p class="response_body" v-else>
-              {{ response.data }}
-            </p>
+              <p class="response_body" v-else-if="response.headers['content-type'].includes('application/json')">
+              <pre>{{response_pretty}}</pre>
+              </p>
+
+              <p class="response_body" v-else>
+                {{ response.data }}
+              </p>
+            </template>
+            <template v-else>
+              <p>Request failed</p>
+            </template>
 
 
           </template>
+
 
 
         </v-sheet>
@@ -263,10 +267,7 @@ export default {
          return acc
       }, {})
 
-      const headers = this.request.headers.reduce( (acc, header) => {
-         acc[header.key] = header.value
-         return acc
-      }, {})
+      const headers = this.request.headers.reduce( (acc, header) => ({ ...acc, [header.key]: header.value }), {})
 
       const axios_options = {
         method: this.request.method,
@@ -278,21 +279,21 @@ export default {
 
 
       this.axios(axios_options)
-      .then(response => {
-        this.response = response
-      })
-      .catch(error => {
+        .then(response => {
+          this.response = response
+        })
+        .catch(error => {
 
-        if(error.response) {
-          this.response = error.response
-        }
-        else {
-          console.error(error)
-          alert('Request failed, see console for details')
-        }
+          if(error.response) {
+            this.response = error.response
+          }
+          else {
+            console.error(error)
+            alert('Request failed, see console for details')
+          }
 
-      })
-      .finally( () => { this.processing = false })
+        })
+        .finally( () => { this.processing = false })
     },
     cancel_request(){
       this.abortController.abort()
