@@ -1,6 +1,12 @@
 <template>
   <v-card :loading="processing" height="100%">
-    <v-card-title> Response </v-card-title>
+    <v-toolbar flat>
+      <v-row>
+        <v-col>
+          <v-toolbar-title>Response</v-toolbar-title>
+        </v-col>
+      </v-row>
+    </v-toolbar>
 
     <v-card-text v-if="!processing && !response">
       No response yet

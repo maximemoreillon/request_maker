@@ -2,7 +2,7 @@
 
   <v-container fluid>
 
-    <v-row align="stretch">
+    <v-row>
       <!-- Request column -->
       <v-col cols="12" md="6">
         <v-card>
@@ -20,10 +20,9 @@
 
           </v-toolbar>
 
-
-          <v-card-text>
-            <v-form @submit.prevent="send_request()" ref="form" v-model="valid" lazy-validation>
-
+          <!-- Method and URL -->
+          <v-form @submit.prevent="send_request()" ref="form" v-model="valid" lazy-validation>
+            <v-card-text>
               <v-row>
                 <v-col>
                   <v-select label="Method" :items="methods" item-text="text" item-value="value"
@@ -36,97 +35,123 @@
                     :rules="urlRules" />
                 </v-col>
               </v-row>
+            </v-card-text>
 
+            <!-- Headers and Body -->
+            <v-card-text>
+              <v-card outlined>
+                <v-toolbar flat dense>
+                  <v-tabs v-model="tab">
+                    <v-tabs-slider />
+                    <v-tab>
+                      Headers
+                    </v-tab>
+                    <v-tab v-if="['post', 'put', 'patch'].includes(request.method)">
+                      Body (JSON)
+                    </v-tab>
+                  </v-tabs>
+                </v-toolbar>
+                <v-divider />
+                <v-card-text>
+                  <v-tabs-items v-model="tab">
+                    <!-- Header tabs -->
+                    <v-tab-item>
+                      <v-row>
+                        <v-col>
+                          <h3>Headers</h3>
+                        </v-col>
+                        <v-spacer />
+                        <v-col cols="auto">
+                          <v-btn small @click="add_header()">
+                            <v-icon>mdi-plus</v-icon>
+                            <span>Add header</span>
+                          </v-btn>
+                        </v-col>
+                      </v-row>
+                      <table v-if="request.headers.length">
+                        <tr v-for="(item, index) in request.headers" v-bind:key="`header_item_${index}`">
+                          <td>
+                            <v-text-field v-model="request.headers[index].key" placeholder="Key" />
+                          </td>
+                          <td>:</td>
+                          <td>
+                            <v-text-field v-model="request.headers[index].value" placeholder="Value" />
+                          </td>
+                          <td>
+                            <v-btn icon @click="delete_header(index)">
+                              <v-icon>mdi-delete</v-icon>
+                            </v-btn>
+                          </td>
+                        </tr>
+                      </table>
+
+                      <div class="" v-else>
+                        No headers
+                      </div>
+                    </v-tab-item>
+
+                    <!-- Body tab -->
+                    <v-tab-item>
+                      <v-row>
+                        <v-col>
+                          <h3>Body (JSON)</h3>
+                        </v-col>
+
+                        <v-spacer />
+
+                        <v-col cols="auto">
+                          <v-btn small @click="add_body_item()">
+                            <v-icon>mdi-plus</v-icon>
+                            <span>Add body item</span>
+                          </v-btn>
+                        </v-col>
+                      </v-row>
+
+                      <template v-if="request.body.length">
+                        <div class=""> { </div>
+                        <table>
+                          <tr v-for="(item, index) in request.body" :key="`body_item_${index}`">
+                            <td></td>
+                            <td>"</td>
+                            <td>
+                              <v-text-field v-model="request.body[index].key" placeholder="Key" />
+                            </td>
+                            <td>" : "</td>
+                            <td>
+                              <v-text-field v-model="request.body[index].value" placeholder="Value" />
+                            </td>
+                            <td>
+                              <span>"</span>
+                              <span v-if="index < request.body.length -1">,</span>
+                            </td>
+                            <td>
+                              <v-btn icon @click="delete_body_item(index)">
+                                <v-icon>mdi-delete</v-icon>
+                              </v-btn>
+                            </td>
+
+                          </tr>
+                        </table>
+                        <div class=""> } </div>
+                      </template>
+
+                      <div v-else>
+                        Empty body
+                      </div>
+                    </v-tab-item>
+                  </v-tabs-items>
+                </v-card-text>
+
+              </v-card>
+            </v-card-text>
+
+            <v-card-text>
+
+              <!-- Send button -->
               <v-row>
-                <v-col>
-                  <h3>Headers</h3>
-                </v-col>
-
-                <v-spacer></v-spacer>
-
-                <v-col>
-                  <v-btn small @click="add_header()">
-                    <v-icon>mdi-plus</v-icon>
-                    <span>Add header</span>
-                  </v-btn>
-                </v-col>
-              </v-row>
-
-              <table v-if="request.headers.length > 0">
-                <tr v-for="(item, index) in request.headers" v-bind:key="`header_item_${index}`">
-                  <td>
-                    <v-text-field v-model="request.headers[index].key" placeholder="Key" />
-                  </td>
-                  <td>:</td>
-                  <td>
-                    <v-text-field v-model="request.headers[index].value" placeholder="Value" />
-                  </td>
-                  <td>
-                    <v-btn icon @click="delete_header(index)">
-                      <v-icon>mdi-close</v-icon>
-                    </v-btn>
-                  </td>
-                </tr>
-              </table>
-
-              <div class="" v-else>
-                No headers
-              </div>
-
-              <template v-if="['post', 'put', 'patch'].includes(request.method)">
-
-                <v-row class="mt-5">
-                  <v-col>
-                    <h3>Body (JSON)</h3>
-                  </v-col>
-
-                  <v-spacer></v-spacer>
-
-                  <v-col>
-                    <v-btn small @click="add_body_item()">
-                      <v-icon>mdi-plus</v-icon>
-                      <span>Add body item</span>
-                    </v-btn>
-                  </v-col>
-                </v-row>
-
-                <template v-if="request.body.length > 0">
-                  <div class=""> { </div>
-                  <table>
-                    <tr v-for="(item, index) in request.body" v-bind:key="`body_item_${index}`">
-                      <td></td>
-                      <td>"</td>
-                      <td>
-                        <v-text-field v-model="request.body[index].key" placeholder="Key" />
-                      </td>
-                      <td>" : "</td>
-                      <td>
-                        <v-text-field v-model="request.body[index].value" placeholder="Value" />
-                      </td>
-                      <td>
-                        <span>"</span>
-                        <span v-if="index < request.body.length -1">,</span>
-                      </td>
-                      <td>
-                        <v-btn icon @click="delete_body_item(index)">
-                          <v-icon>mdi-delete</v-icon>
-                        </v-btn>
-                      </td>
-
-                    </tr>
-                  </table>
-                  <div class=""> } </div>
-                </template>
-
-                <div class="" v-else>
-                  Empty body
-                </div>
-              </template>
-
-              <v-row class="mt-8">
                 <v-spacer />
                 <v-col cols="auto">
-                  <v-btn :loading="processing" :disabled="processing || !url_valid" type="submit">
+                  <v-btn :loading="processing" :disabled="!url_valid" type="submit">
                     <v-icon>mdi-send</v-icon>
                     <span>Send</span>
                   </v-btn>
@@ -140,8 +165,8 @@
                 <v-spacer />
               </v-row>
 
-            </v-form>
-          </v-card-text>
+            </v-card-text>
+          </v-form>
 
 
         </v-card>
@@ -153,12 +178,7 @@
       </v-col>
 
     </v-row>
-
-
   </v-container>
-
-
-
 </template>
 
 <script>
@@ -178,6 +198,7 @@ export default {
       abortController: null,
 
       valid: false,
+      tab: null,
 
       urlRules: [
         v => !!v || 'URL is required',
@@ -287,13 +308,14 @@ export default {
           }
           else {
             console.error(error)
-            alert('Request failed, see console for details')
+            this.response = error
           }
 
         })
         .finally( () => { this.processing = false })
     },
     cancel_request(){
+      if(!this.processing) return
       this.abortController.abort()
     },
     add_body_item(){
