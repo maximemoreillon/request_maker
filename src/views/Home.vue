@@ -24,13 +24,11 @@
           <v-form @submit.prevent="send_request()" ref="form" v-model="valid" lazy-validation>
             <v-card-text>
               <v-row>
-                <v-col>
+                <v-col cols="3">
                   <v-select label="Method" :items="methods" item-text="text" item-value="value"
                     v-model="request.method" />
                 </v-col>
-              </v-row>
-              <v-row>
-                <v-col>
+                <v-col cols="9">
                   <v-text-field label="URL" v-model="request.url" placeholder="http://192.169.1.2:8080/users" required
                     :rules="urlRules" />
                 </v-col>
