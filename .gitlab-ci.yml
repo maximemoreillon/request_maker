@@ -16,6 +16,8 @@ services:
 
 build:
   stage: build
+  only:
+    - master
   tags:
     - dind
   before_script:
@@ -29,9 +31,9 @@ build:
 deploy:
   stage: deploy
   only:
-    - tags
-  tags:
     - master
+  tags:
+    - dind
   script:
     - envsubst < kubernetes/deployment.yml | kubectl apply -f -
   environment:
