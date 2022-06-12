@@ -61,7 +61,7 @@
                         <v-spacer />
                         <v-col cols="auto">
                           <v-btn small @click="add_header()">
-                            <v-icon>mdi-plus</v-icon>
+                            <v-icon left>mdi-plus</v-icon>
                             <span>Add header</span>
                           </v-btn>
                         </v-col>
@@ -106,7 +106,7 @@
                         </v-col>
                         <v-col cols="auto">
                           <v-btn small @click="add_body_item()">
-                            <v-icon>mdi-plus</v-icon>
+                            <v-icon left>mdi-plus</v-icon>
                             <span>Add item</span>
                           </v-btn>
                         </v-col>
@@ -151,11 +151,10 @@
                       <template v-if="request.content.type === 'multipart'">
 
                         <template v-if="request.content.formData.length">
-                          <h3>Fields</h3>
                           <v-row align="baseline" v-for="(item, index) in request.content.formData"
                             :key="`body_json_item_${index}`">
                             <v-col>
-                              <v-text-field v-model="request.content.formData[index].key" placeholder="Field" />
+                              <v-text-field v-model="request.content.formData[index].key" label="Field" />
                             </v-col>
                             <v-col>
                               <v-select label="Field type" :items="formData_field_types" item-text="text"
@@ -194,13 +193,13 @@
                 <v-spacer />
                 <v-col cols="auto">
                   <v-btn :loading="processing" :disabled="!url_valid" type="submit">
-                    <v-icon>mdi-send</v-icon>
+                    <v-icon left>mdi-send</v-icon>
                     <span>Send</span>
                   </v-btn>
                 </v-col>
                 <v-col cols="auto">
                   <v-btn @click="cancel_request()" :disabled="!processing">
-                    <v-icon>mdi-close</v-icon>
+                    <v-icon left>mdi-close</v-icon>
                     <span>Cancel</span>
                   </v-btn>
                 </v-col>

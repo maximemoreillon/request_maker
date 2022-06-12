@@ -2,6 +2,7 @@
     <v-dialog v-model="dialog" width="500">
         <template v-slot:activator="{ on, attrs }">
             <v-btn v-bind="attrs" v-on="on">
+                <v-icon left>mdi-history</v-icon>
                 History
             </v-btn>
         </template>
