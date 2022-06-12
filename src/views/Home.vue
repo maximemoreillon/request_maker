@@ -45,7 +45,7 @@
                       Headers
                     </v-tab>
                     <v-tab v-if="['post', 'put', 'patch'].includes(request.method)">
-                      Body (JSON)
+                      Body
                     </v-tab>
                   </v-tabs>
                 </v-toolbar>
@@ -67,7 +67,7 @@
                         </v-col>
                       </v-row>
                       <table v-if="request.headers.length">
-                        <tr v-for="(item, index) in request.headers" v-bind:key="`header_item_${index}`">
+                        <tr v-for="(item, index) in request.headers" :key="`header_item_${index}`">
                           <td>
                             <v-text-field v-model="request.headers[index].key" placeholder="Key" />
                           </td>
@@ -90,52 +90,96 @@
 
                     <!-- Body tab -->
                     <v-tab-item>
+
                       <v-row>
                         <v-col>
-                          <h3>Body (JSON)</h3>
+                          <h3>Body</h3>
                         </v-col>
 
                         <v-spacer />
 
+
+                      </v-row>
+                      <v-row align="baseline">
+                        <v-col>
+                          <v-select :items="body_types" v-model="request.content.type" label="Content-Type" />
+                        </v-col>
                         <v-col cols="auto">
                           <v-btn small @click="add_body_item()">
                             <v-icon>mdi-plus</v-icon>
-                            <span>Add body item</span>
+                            <span>Add item</span>
                           </v-btn>
                         </v-col>
                       </v-row>
 
-                      <template v-if="request.body.length">
-                        <div class=""> { </div>
-                        <table>
-                          <tr v-for="(item, index) in request.body" :key="`body_item_${index}`">
-                            <td></td>
-                            <td>"</td>
-                            <td>
-                              <v-text-field v-model="request.body[index].key" placeholder="Key" />
-                            </td>
-                            <td>" : "</td>
-                            <td>
-                              <v-text-field v-model="request.body[index].value" placeholder="Value" />
-                            </td>
-                            <td>
-                              <span>"</span>
-                              <span v-if="index < request.body.length -1">,</span>
-                            </td>
-                            <td>
+                      <!-- Request content type is JSON -->
+                      <template v-if="request.content.type === 'json'">
+                        <template v-if="request.content.json.length">
+                          <div class=""> { </div>
+                          <table>
+                            <tr v-for="(item, index) in request.content.json" :key="`body_json_item_${index}`">
+                              <td></td>
+                              <td>"</td>
+                              <td>
+                                <v-text-field v-model="request.content.json[index].key" placeholder="Key" />
+                              </td>
+                              <td>" : "</td>
+                              <td>
+                                <v-text-field v-model="request.content.json[index].value" placeholder="Value" />
+                              </td>
+                              <td>
+                                <span>"</span>
+                                <span v-if="index < request.content.json.length -1">,</span>
+                              </td>
+                              <td>
+                                <v-btn icon @click="delete_body_item(index)">
+                                  <v-icon>mdi-delete</v-icon>
+                                </v-btn>
+                              </td>
+
+                            </tr>
+                          </table>
+                          <div class=""> } </div>
+                        </template>
+
+                        <div v-else>
+                          Empty body
+                        </div>
+                      </template>
+
+                      <!-- If request body content type is multipart/form-data -->
+                      <template v-if="request.content.type === 'multipart'">
+
+                        <template v-if="request.content.formData.length">
+                          <h3>Fields</h3>
+                          <v-row align="baseline" v-for="(item, index) in request.content.formData"
+                            :key="`body_json_item_${index}`">
+                            <v-col>
+                              <v-text-field v-model="request.content.formData[index].key" placeholder="Field" />
+                            </v-col>
+                            <v-col>
+                              <v-select label="Field type" :items="formData_field_types" item-text="text"
+                                item-value="value" v-model="request.content.formData[index].type" />
+                            </v-col>
+                            <v-col>
+                              <v-text-field v-if="request.content.formData[index].type === 'string'"
+                                v-model="request.content.formData[index].value" placeholder="Value" />
+                              <v-file-input v-else-if="request.content.formData[index].type === 'file'"
+                                v-model="request.content.formData[index].value" />
+                            </v-col>
+                            <v-col cols="1">
                               <v-btn icon @click="delete_body_item(index)">
                                 <v-icon>mdi-delete</v-icon>
                               </v-btn>
-                            </td>
+                            </v-col>
+                          </v-row>
+                        </template>
 
-                          </tr>
-                        </table>
-                        <div class=""> } </div>
+                        <div v-else>
+                          Empty body
+                        </div>
                       </template>
 
-                      <div v-else>
-                        Empty body
-                      </div>
                     </v-tab-item>
                   </v-tabs-items>
                 </v-card-text>
@@ -217,10 +261,24 @@ export default {
         {text: 'PATCH', value: 'patch'},
       ],
 
+      body_types: [
+        { text: 'application/json', value: 'json' },
+        { text: 'Multipart/form-data', value: 'multipart' },
+      ],
+
+      formData_field_types: [
+        { text: 'String', value: 'string' },
+        { text: 'File', value: 'file' },
+      ],
+
       request: {
         url: 'http://192.168.1.2:8080/items',
         method: 'get',
-        body: [],
+        content: {
+          type: 'json',
+          json: [], // Array of key-value pairs
+          formData: [],
+        },
         headers: [],
       },
 
@@ -279,17 +337,23 @@ export default {
 
       const url = `${protocol}//${hostname}:${port}${pathname}`
 
-      const body = this.request.body.reduce( (acc, item) => {
-         acc[item.key] = item.value
-         return acc
-      }, {})
+      let data
+
+      if (this.request.content.type === 'json'){
+        data = this.request.content.json.reduce( (acc, {key, value}) => ({ ...acc, [key]: value }), {})
+      }
+      else if (this.request.content.type === 'multipart'){
+        const formData = new FormData()
+        this.request.content.formData.forEach(({ key, value }) => { formData.append(key,value) })
+        data = formData
+      }
 
       const headers = this.request.headers.reduce( (acc, header) => ({ ...acc, [header.key]: header.value }), {})
 
       const axios_options = {
         method: this.request.method,
         url,
-        data: body,
+        data,
         headers,
         signal: this.abortController.signal,
       }
@@ -317,10 +381,12 @@ export default {
       this.abortController.abort()
     },
     add_body_item(){
-      this.request.body.push({key: '', value: ''})
+      if (this.request.content.type === 'json') this.request.content.json.push({key: '', value: ''})
+      else if (this.request.content.type === 'multipart') this.request.content.formData.push({ key: '', value: null, type: 'string'})
     },
     delete_body_item(index){
-      this.request.body.splice(index, 1)
+      if (this.request.content.type === 'json') this.request.content.json.splice(index, 1)
+      else if (this.request.content.type === 'multipart') this.request.content.formData.splice(index, 1)
     },
     add_header(){
       this.request.headers.push({key: '', value: ''})
