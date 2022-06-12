@@ -8,13 +8,13 @@
 
 <script>
 
-import pjson from '@/../package.json'
+import {version} from '@/../package.json'
 
 export default {
   name: 'About',
   data(){
     return {
-      version: pjson.version
+      version
     }
   },
 
