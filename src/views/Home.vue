@@ -114,37 +114,8 @@
 
                       <!-- Request content type is JSON -->
                       <template v-if="request.content.type === 'json'">
-                        <template v-if="request.content.json.length">
-                          <div class=""> { </div>
-                          <table>
-                            <tr v-for="(item, index) in request.content.json" :key="`body_json_item_${index}`">
-                              <td></td>
-                              <td>"</td>
-                              <td>
-                                <v-text-field v-model="request.content.json[index].key" placeholder="Key" />
-                              </td>
-                              <td>" : "</td>
-                              <td>
-                                <v-text-field v-model="request.content.json[index].value" placeholder="Value" />
-                              </td>
-                              <td>
-                                <span>"</span>
-                                <span v-if="index < request.content.json.length -1">,</span>
-                              </td>
-                              <td>
-                                <v-btn icon @click="delete_body_item(index)">
-                                  <v-icon>mdi-delete</v-icon>
-                                </v-btn>
-                              </td>
+                        <v-textarea label="JSON" :rows="1" auto-grow :rules="jsonRules" placeholder='{"message": "Hello World!"}'/>
 
-                            </tr>
-                          </table>
-                          <div class=""> } </div>
-                        </template>
-
-                        <div v-else>
-                          Empty body
-                        </div>
                       </template>
 
                       <!-- If request body content type is multipart/form-data -->
@@ -252,6 +223,16 @@ export default {
         },
       ],
 
+      jsonRules: [
+        v => {
+          try {
+            JSON.parse(v)
+            return true
+          } catch { return 'JSON is invalid' }
+
+        },
+      ],
+
       methods: [
         {text: 'GET', value: 'get'},
         {text: 'POST', value: 'post'},
@@ -275,7 +256,7 @@ export default {
         method: 'get',
         content: {
           type: 'json',
-          json: [], // Array of key-value pairs
+          json: '',
           formData: [],
         },
         headers: [],
