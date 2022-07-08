@@ -114,7 +114,8 @@
 
                       <!-- Request content type is JSON -->
                       <template v-if="request.content.type === 'json'">
-                        <v-textarea label="JSON" :rows="1" auto-grow :rules="jsonRules" placeholder='{"message": "Hello World!"}'/>
+                        <v-textarea label="JSON" :rows="1" auto-grow :rules="jsonRules"
+                          placeholder='{"message": "Hello World!"}' v-model="request.content.json" />
 
                       </template>
 
@@ -123,7 +124,7 @@
 
                         <template v-if="request.content.formData.length">
                           <v-row align="baseline" v-for="(item, index) in request.content.formData"
-                            :key="`body_json_item_${index}`">
+                            :key="`body_item_${index}`">
                             <v-col>
                               <v-text-field v-model="request.content.formData[index].key" label="Field" />
                             </v-col>
@@ -256,7 +257,7 @@ export default {
         method: 'get',
         content: {
           type: 'json',
-          json: '',
+          json: '{}',
           formData: [],
         },
         headers: [],
@@ -300,7 +301,7 @@ export default {
 
       this.add_request_to_history()
 
-      this.processing = true
+      
       this.response = null
       this.abortController = new AbortController()
 
@@ -320,13 +321,21 @@ export default {
       let data
 
       if (this.request.content.type === 'json'){
-        data = this.request.content.json.reduce( (acc, {key, value}) => ({ ...acc, [key]: value }), {})
+        try {
+          data = JSON.parse(this.request.content.json)
+        }
+        catch(error){
+          alert('JSON is not valid')
+          return
+        }
+        
       }
       else if (this.request.content.type === 'multipart'){
         const formData = new FormData()
         this.request.content.formData.forEach(({ key, value }) => { formData.append(key,value) })
         data = formData
       }
+      
 
       const headers = this.request.headers.reduce( (acc, header) => ({ ...acc, [header.key]: header.value }), {})
 
@@ -337,6 +346,8 @@ export default {
         headers,
         signal: this.abortController.signal,
       }
+
+      this.processing = true
 
 
       this.axios(axios_options)
