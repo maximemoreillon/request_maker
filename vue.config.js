@@ -1,6 +1,6 @@
 module.exports = {
-  outputDir: 'docs',
-  publicPath: '',
+  // outputDir: 'docs',
+  // publicPath: '',
   pwa: {
     name: 'Request maker',
     themeColor: '#444444',
