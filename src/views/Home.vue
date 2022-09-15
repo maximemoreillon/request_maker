@@ -195,8 +195,8 @@
 </template>
 
 <script>
-import Response from '../components/Response.vue'
-import RequestHistoryDialog from '../components/RequestHistoryDialog.vue'
+import Response from '@/components/Response.vue'
+import RequestHistoryDialog from '@/components/RequestHistoryDialog.vue'
 
 export default {
   name: 'Home',
