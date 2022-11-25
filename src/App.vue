@@ -340,9 +340,10 @@ export default {
         port,
         protocol,
         pathname,
+        search
       } = parsed_url
 
-      const url = `${protocol}//${hostname}:${port}${pathname}`
+      const url = `${protocol}//${hostname}:${port}${pathname}${search}`
 
       let data
 
