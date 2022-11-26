@@ -37,6 +37,7 @@
                   </v-col>
                 </v-row>
               </v-card-text>
+
     
               <!-- Headers and Body -->
               <v-card-text>
@@ -58,7 +59,7 @@
                         <RequestHeadersManagement v-model="request.headers" />
                       </v-tab-item>
                       <!-- <v-tab-item>
-                        <RequestQueryParameters v-model="queryParameters" />
+                        <RequestQueryParameters v-model="requestUrl" />
                       </v-tab-item> -->
                       <v-tab-item>
                         <RequestContentManagement v-model="request.content" />
@@ -281,6 +282,16 @@ export default {
         return false
       }
     },
+
+    // requestUrl: {
+    //   get(){
+    //     return new URL(this.request.url)
+    //   },
+    //   set(newVal){
+    //     this.request.url = newVal.toString()
+    //   }
+
+    // }
 
   }
 

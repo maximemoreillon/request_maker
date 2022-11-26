@@ -12,7 +12,7 @@
             </v-card-title>
             <v-card-text>
                 <v-list>
-                    <v-list-item @click="$emit('loadRequest', item)" v-for="(item, index) in history_reversed"
+                    <v-list-item @click="loadRequest(item)" v-for="(item, index) in history_reversed"
                         :key="index">
                         {{item.method.toUpperCase()}} {{item.url}}
                     </v-list-item>
@@ -35,6 +35,12 @@ export default {
     data(){
         return {
             dialog: false,
+        }
+    },
+    methods: {
+        loadRequest(item){
+            this.$emit('loadRequest', item)
+            this.dialog = false
         }
     },
     computed: {

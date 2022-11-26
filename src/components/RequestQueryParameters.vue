@@ -20,7 +20,7 @@
             </td>
             <td>:</td>
             <td>
-                <v-text-field v-model="queryParameters[index].value" placeholder="Value" />
+                <v-text-field v-model="item.value" placeholder="Value" />
             </td>
             <td>
                 <v-btn icon @click="deleteParameter(index)">
@@ -41,10 +41,12 @@
 export default {
     name: 'RequstQueryParameters',
     props: {
-        value: Array,
+        // value: Array,
+        value: URL,
     },
     methods: {
         addParameter() {
+            console.log(this.queryParameters)
             this.queryParameters.push({ key: '', value: '' })
         },
         deleteParameter(index) {
@@ -52,15 +54,33 @@ export default {
         },
     },
     computed: {
+        // queryParameters: {
+        //     get(){
+        //         return this.value
+        //     },
+        //     set(newVal){
+        //         this.$emit('input', newVal)
+        //     }
+        // },
         queryParameters: {
-            get(){
-                return this.value
+            get() {
+
+                const {
+                    searchParams
+                } = this.value
+
+                const output = []
+
+                for (const iterator of searchParams.entries()) {
+                    output.push({ key: iterator[0], value: iterator[1] })
+                }
+                return output
             },
-            set(newVal){
+            set(newVal) {
+                console.log('queryParams SET')
                 this.$emit('input', newVal)
             }
-        },
-
+        }
     }
 
 }

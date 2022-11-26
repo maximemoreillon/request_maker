@@ -15,11 +15,11 @@
         <table v-if="headers.length">
             <tr v-for="(item, index) in headers" :key="`header_item_${index}`">
                 <td>
-                    <v-text-field v-model="headers[index].key" placeholder="Key" />
+                    <v-text-field v-model="item.key" placeholder="Key" />
                 </td>
                 <td>:</td>
                 <td>
-                    <v-text-field v-model="headers[index].value" placeholder="Value" />
+                    <v-text-field v-model="item.value" placeholder="Value" />
                 </td>
                 <td>
                     <v-btn icon @click="delete_header(index)">
