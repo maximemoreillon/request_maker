@@ -147,8 +147,6 @@ export default {
         },
       ],
 
-      
-
       methods: [
         { text: 'GET', value: 'get' },
         { text: 'POST', value: 'post' },
@@ -158,9 +156,6 @@ export default {
       ],
 
       
-
-      
-
       request: {
         url: 'http://192.168.1.2:8080/items',
         method: 'get',
@@ -200,8 +195,7 @@ export default {
       try {
         this.request_history = JSON.parse(history_stringified)
         const last_item = this.request_history[this.request_history.length - 1]
-        if (last_item)
-          this.request = { ...last_item }
+        if (last_item) this.request = { ...last_item }
       } catch (error) {
         console.warn(error)
       }
@@ -245,9 +239,6 @@ export default {
         this.request.content.formData.forEach(({ key, value }) => { formData.append(key, value) })
         data = formData
       }
-
-      console.log(data)
-
 
       const headers = this.request.headers.reduce((acc, header) => ({ ...acc, [header.key]: header.value }), {})
 
