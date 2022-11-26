@@ -44,9 +44,7 @@
                   <v-toolbar flat dense>
                     <v-tabs v-model="tab">
                       <v-tabs-slider />
-                      <v-tab>
-                        Headers
-                      </v-tab>
+                      <v-tab>Headers</v-tab>
                       <v-tab v-if="['post', 'put', 'patch'].includes(request.method)">
                         Body
                       </v-tab>
@@ -57,103 +55,12 @@
                     <v-tabs-items v-model="tab">
                       <!-- Header tabs -->
                       <v-tab-item>
-                        <v-row>
-                          <v-col>
-                            <h3>Headers</h3>
-                          </v-col>
-                          <v-spacer />
-                          <v-col cols="auto">
-                            <v-btn small @click="add_header()">
-                              <v-icon left>mdi-plus</v-icon>
-                              <span>Add header</span>
-                            </v-btn>
-                          </v-col>
-                        </v-row>
-                        <table v-if="request.headers.length">
-                          <tr v-for="(item, index) in request.headers" :key="`header_item_${index}`">
-                            <td>
-                              <v-text-field v-model="request.headers[index].key" placeholder="Key" />
-                            </td>
-                            <td>:</td>
-                            <td>
-                              <v-text-field v-model="request.headers[index].value" placeholder="Value" />
-                            </td>
-                            <td>
-                              <v-btn icon @click="delete_header(index)">
-                                <v-icon>mdi-delete</v-icon>
-                              </v-btn>
-                            </td>
-                          </tr>
-                        </table>
-    
-                        <div class="" v-else>
-                          No headers
-                        </div>
+                        <RequestHeadersManagement v-model="request.headers" />
                       </v-tab-item>
     
                       <!-- Body tab -->
                       <v-tab-item>
-    
-                        <v-row>
-                          <v-col>
-                            <h3>Body</h3>
-                          </v-col>
-    
-                          <v-spacer />
-    
-    
-                        </v-row>
-                        <v-row align="baseline">
-                          <v-col>
-                            <v-select :items="body_types" v-model="request.content.type" label="Content-Type" />
-                          </v-col>
-                          <v-col cols="auto">
-                            <v-btn small @click="add_body_item()">
-                              <v-icon left>mdi-plus</v-icon>
-                              <span>Add item</span>
-                            </v-btn>
-                          </v-col>
-                        </v-row>
-    
-                        <!-- Request content type is JSON -->
-                        <template v-if="request.content.type === 'json'">
-                          <v-textarea label="JSON" :rows="1" auto-grow :rules="jsonRules"
-                            placeholder='{"message": "Hello World!"}' v-model="request.content.json" />
-    
-                        </template>
-    
-                        <!-- If request body content type is multipart/form-data -->
-                        <template v-if="request.content.type === 'multipart'">
-    
-                          <template v-if="request.content.formData.length">
-                            <v-row align="baseline" v-for="(item, index) in request.content.formData"
-                              :key="`body_item_${index}`">
-                              <v-col>
-                                <v-text-field v-model="request.content.formData[index].key" label="Field" />
-                              </v-col>
-                              <v-col>
-                                <v-select label="Field type" :items="formData_field_types" item-text="text"
-                                  item-value="value" v-model="request.content.formData[index].type" />
-                              </v-col>
-                              <v-col>
-                                <v-text-field v-if="request.content.formData[index].type === 'string'"
-                                  v-model="request.content.formData[index].value" placeholder="Value" />
-                                <v-file-input v-else-if="request.content.formData[index].type === 'file'"
-                                  v-model="request.content.formData[index].value" />
-                              </v-col>
-                              <v-col cols="1">
-                                <v-btn icon @click="delete_body_item(index)">
-                                  <v-icon>mdi-delete</v-icon>
-                                </v-btn>
-                              </v-col>
-                            </v-row>
-                          </template>
-    
-                          <div v-else>
-                            Empty body
-                          </div>
-                        </template>
-    
+                        <RequestContentManagement v-model="request.content" />
                       </v-tab-item>
                     </v-tabs-items>
                   </v-card-text>
@@ -200,23 +107,11 @@
 
 <script>
 import AppTemplate from '@moreillon/vue_application_template_vuetify'
-// export default {
-//   name: 'App',
-
-//   components: {
-//     AppTemplate
-//   },
-
-//   data: () => ({
-//     options: {
-//       title: "Request maker",
-//     },
-//   }),
-
-// };
+import RequestHeadersManagement from './components/RequestHeadersManagement.vue'
 import Response from '@/components/Response.vue'
 import RequestHistoryDialog from '@/components/RequestHistoryDialog.vue'
 import AboutDialog from '@/components/AboutDialog.vue'
+import RequestContentManagement from './components/RequestContentManagement.vue'
 
 export default {
   name: 'Home',
@@ -224,7 +119,9 @@ export default {
     AppTemplate,
     Response,
     RequestHistoryDialog,
-    AboutDialog
+    AboutDialog,
+    RequestHeadersManagement,
+    RequestContentManagement
   },
   data() {
     return {
@@ -250,15 +147,7 @@ export default {
         },
       ],
 
-      jsonRules: [
-        v => {
-          try {
-            JSON.parse(v)
-            return true
-          } catch { return 'JSON is invalid' }
-
-        },
-      ],
+      
 
       methods: [
         { text: 'GET', value: 'get' },
@@ -268,15 +157,9 @@ export default {
         { text: 'PATCH', value: 'patch' },
       ],
 
-      body_types: [
-        { text: 'application/json', value: 'json' },
-        { text: 'Multipart/form-data', value: 'multipart' },
-      ],
+      
 
-      formData_field_types: [
-        { text: 'String', value: 'string' },
-        { text: 'File', value: 'file' },
-      ],
+      
 
       request: {
         url: 'http://192.168.1.2:8080/items',
@@ -363,6 +246,8 @@ export default {
         data = formData
       }
 
+      console.log(data)
+
 
       const headers = this.request.headers.reduce((acc, header) => ({ ...acc, [header.key]: header.value }), {})
 
@@ -398,20 +283,8 @@ export default {
       if (!this.processing) return
       this.abortController.abort()
     },
-    add_body_item() {
-      if (this.request.content.type === 'json') this.request.content.json.push({ key: '', value: '' })
-      else if (this.request.content.type === 'multipart') this.request.content.formData.push({ key: '', value: null, type: 'string' })
-    },
-    delete_body_item(index) {
-      if (this.request.content.type === 'json') this.request.content.json.splice(index, 1)
-      else if (this.request.content.type === 'multipart') this.request.content.formData.splice(index, 1)
-    },
-    add_header() {
-      this.request.headers.push({ key: '', value: '' })
-    },
-    delete_header(index) {
-      this.request.headers.splice(index, 1)
-    },
+
+    
   },
   computed: {
 
