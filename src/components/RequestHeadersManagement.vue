@@ -55,6 +55,7 @@ export default {
                 return this.value
             },
             set(newVal) {
+                console.log(newVal)
                 this.$emit('input', newVal)
             }
         }
@@ -62,3 +63,10 @@ export default {
 }
 
 </script>
+
+<style scoped>
+
+table {
+    width: 100%;
+}
+</style>

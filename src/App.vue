@@ -45,6 +45,7 @@
                     <v-tabs v-model="tab">
                       <v-tabs-slider />
                       <v-tab>Headers</v-tab>
+                      <!-- <v-tab>Query parameters</v-tab> -->
                       <v-tab v-if="['post', 'put', 'patch'].includes(request.method)">
                         Body
                       </v-tab>
@@ -53,12 +54,12 @@
                   <v-divider />
                   <v-card-text>
                     <v-tabs-items v-model="tab">
-                      <!-- Header tabs -->
                       <v-tab-item>
                         <RequestHeadersManagement v-model="request.headers" />
                       </v-tab-item>
-    
-                      <!-- Body tab -->
+                      <!-- <v-tab-item>
+                        <RequestQueryParameters v-model="queryParameters" />
+                      </v-tab-item> -->
                       <v-tab-item>
                         <RequestContentManagement v-model="request.content" />
                       </v-tab-item>
@@ -112,6 +113,7 @@ import Response from '@/components/Response.vue'
 import RequestHistoryDialog from '@/components/RequestHistoryDialog.vue'
 import AboutDialog from '@/components/AboutDialog.vue'
 import RequestContentManagement from './components/RequestContentManagement.vue'
+// import RequestQueryParameters from './components/RequestQueryParameters.vue'
 
 export default {
   name: 'Home',
@@ -121,7 +123,8 @@ export default {
     RequestHistoryDialog,
     AboutDialog,
     RequestHeadersManagement,
-    RequestContentManagement
+    RequestContentManagement,
+    // RequestQueryParameters
   },
   data() {
     return {
@@ -159,12 +162,12 @@ export default {
       request: {
         url: 'http://192.168.1.2:8080/items',
         method: 'get',
+        headers: [],
         content: {
           type: 'json',
           json: '{}',
           formData: [],
         },
-        headers: [],
       },
 
       request_history: [],
@@ -195,7 +198,7 @@ export default {
       try {
         this.request_history = JSON.parse(history_stringified)
         const last_item = this.request_history[this.request_history.length - 1]
-        if (last_item) this.request = { ...last_item }
+        if (last_item) this.request = { ...this.request, ...last_item }
       } catch (error) {
         console.warn(error)
       }
@@ -211,16 +214,6 @@ export default {
       let parsed_url
       try { parsed_url = new URL(this.request.url) }
       catch { return console.error('Invalid URL') }
-
-      const {
-        hostname,
-        port,
-        protocol,
-        pathname,
-        search
-      } = parsed_url
-
-      const url = `${protocol}//${hostname}:${port}${pathname}${search}`
 
       let data
 
@@ -244,7 +237,7 @@ export default {
 
       const axios_options = {
         method: this.request.method,
-        url,
+        url: parsed_url.toString(),
         data,
         headers,
         signal: this.abortController.signal,
@@ -287,7 +280,8 @@ export default {
       catch {
         return false
       }
-    }
+    },
+
   }
 
 }
