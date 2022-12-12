@@ -36,10 +36,12 @@
         </v-col>
       </v-row>
       <v-row>
-        <v-col class="response_body" v-if="content_type.includes('text/html')" v-html="response.data" />
-        <v-col class="response_body" v-else-if="content_type.includes('application/json')">
-          <pre>{{response_pretty}}</pre>
-        </v-col>
+        <template v-if="content_type">
+          <v-col class="response_body" v-if="content_type.includes('text/html')" v-html="response.data" />
+          <v-col class="response_body" v-else-if="content_type.includes('application/json')">
+            <pre>{{response_pretty}}</pre>
+          </v-col>
+        </template>
         <v-col class="response_body" v-else>
           {{ response.data }}
         </v-col>
