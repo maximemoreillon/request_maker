@@ -14,20 +14,22 @@
 
     <v-card-text v-else-if="!processing && response && response.headers">
 
-      <v-row>
-        <v-col cols="4">
+      <v-row align="baseline">
+        <v-col cols="auto">
           <h3>Status</h3>
         </v-col>
-        <v-col cols="auto" :class="{ error_message: response_is_error, success_message: true }">
-          {{ response.status }} {{ response.statusText }}
+        <v-col cols="auto">
+          <v-chip :color="response_is_error ? 'error': 'success'">
+            {{ response.status }} {{ response.statusText }}
+          </v-chip>
         </v-col>
       </v-row>
       <v-row>
-        <v-col cols="4">
+        <v-col cols="auto">
           <h3>Content-type</h3>
         </v-col>
         <v-col cols="auto">
-          {{ response.headers['content-type'] }}
+          {{ content_type || 'Unknown' }}
         </v-col>
       </v-row>
       <v-row>
