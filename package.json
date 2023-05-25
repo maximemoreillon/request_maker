@@ -3,12 +3,12 @@
   "version": "1.3.4",
   "private": true,
   "scripts": {
-    "serve": "BASE_URL=/request-maker/ vue-cli-service serve",
+    "serve": "NODE_OPTIONS=--openssl-legacy-provider BASE_URL=/request-maker/ vue-cli-service serve",
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
-    "@moreillon/vue_application_template_vuetify": "^1.1.7",
+    "@moreillon/vue_application_template_vuetify": "^1.3.1",
     "axios": "^0.27.2",
     "core-js": "^3.22.8",
     "register-service-worker": "^1.7.1",
