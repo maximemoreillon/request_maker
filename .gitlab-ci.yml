@@ -10,15 +10,12 @@ variables:
 
 image: moreillon/ci-dind
 services:
-  - name: docker:19.03.12-dind
-
+  - name: docker:24.0.7-dind
 
 build:
   stage: build
   only:
     - master
-  tags:
-    - dind
   before_script:
     - echo "${DOCKER_HUB_PASSWORD}" | docker login --username ${DOCKER_HUB_USERNAME} --password-stdin;
   script:
